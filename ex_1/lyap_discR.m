@@ -30,7 +30,7 @@ end
     end
     
     % obtinem forma Schur Complexa
-    [U, S] = schur(A, 'complex');
+    [U, S] = schur(A, 'real');
        
     [m,~] = size(A);
     I = eye(m); 
@@ -78,59 +78,82 @@ end
 
 
     else
-        disp('Eroare?')
+        
         while ( k <= m )
 
             if k == m 
-                d = D(k, k) - S(k, k)' * Y(k, 1:k-1) * S(1:k-1, k);
-                Y(k, k) = (S(k,k)' * S(k, k) + 1) \ d;
+                d = D(:, k) - S' * Y(:, 1:k-1) * S(1:k-1, k);
+                y = (S' * S(k, k) + eye(m)) \ d;
+                Y(m,m) = y(end);
+                
                 break
             end
 
             if ( abs(S(k+1,k)) <= 1e-10)
                    
-                d = D(k:m, k) - S(k:m, k:m)' * Y(k:m, 1:k-1) * S(1:k-1, k);
+                d = D(:, k) - S' * Y(:, 1:k-1) * S(1:k-1, k);
                 R = (S' * S(k,k) + eye(m));
                 R21 = R(k:m, 1:k-1);
                 R2 = R(k:m, k:m);
-                
+                d = d(k:m);
                 y = R2 \ ( d - R21 * Y(1:k-1, k));
                 % simetrizam pe Y
                 Y(k:m, k) = y;
                 Y(k, k+1:m) = y(2:end)';
                 k = k + 1;
             else
-                
                 % avem bloc schur
                 A_ = S' * S(k,k) + eye(m);
-                B_ = S' * S(k, k+1);
-                C_ = S' * S(k+1, k);
+                B_ = S' * S(k+1, k);
+                C_ = S' * S(k, k+1);
                 D_ = S' * S(k+1, k+1) + eye(m);
                 
-                A21 = A_(k:m, 1:k-1);
-                A2 = A_(k:m, k:m);
+                bMat = [A_ B_; C_ D_];
                 
-                B21 = B_(k:m, 1:k);
-                B2 = B_(k:m, k+1:m);
+                [Q, R] = qr(bMat);
                 
-                C21 = C_(k:m, 1:k-1);
-                C2 = C_(k:m, k:m);
+                d = Q' * [ D(:,k) - S' * Y(:, 1:k-1) * S(1:k-1, k) ;
+                    D(:,k+1) - S' * Y(:, 1:k-1) * S(1:k-1, k+1)] ;
                 
-                D21 = D_(k:m, 1:k);
-                D2 = D_(k:m, k+1:m);
-                
-                R = [ A21 A2 B21 B2; C21 C2 D21 D2];
-               
-
-                d = [ D(k:m,k) - Y(k:m, 1:k-1) * S(1:k-1, k) ;
-                    D(k:m,k+1) - Y(k:m, 1:k-1) * S(1:k-1, k+1)] ;
-
-                y_aux = R \ d; 
-                Y(k:m,k) = y_aux(k:m);
-                Y(k, k+1:m) = y_aux(k+1:m)';
-                
-                Y(k+1:m,k+1) = y_aux(m+k+1:end);
-                Y(k, k:m) = y_aux(m-k+2:end)';
+                d1 = d(1:m);
+                d2 = d(m+1:end);
+             
+                d2n = d2(k:m);
+                d1n = d1(k:m);
+             
+                d2c = d2(1:k-1);
+                d1c = d1(1:k-1);
+             
+             
+                len_nec = length(d2n);
+                R2 = R(end-len_nec+1:end, end-len_nec+1:end);
+             
+                y2c = Y(1:k-1,k+1);
+                y2n = R2 \ d2n;
+             
+             
+                R1 = R(k:m, k:m);
+                R12 = R(k:m, m+1:m+k-1);
+                R13 = R(k:m, m+k:end);
+             
+                y1n = R1 \ (d1n - R12*y2c - R13*y2n);
+             
+                y_aux = R \ d;
+                y1 = y_aux(1:m);
+             
+                %y2 = y_aux(m+1:end);
+      
+                Y(k:m,k) = y1n;
+                Y(k,k:m) = y1n;
+             
+                Y(k+1:m,k+1) = y2n(2:end);
+                Y(k+1,k+1:m) = y2n(2:end);
+%                 y_aux = R \ d; 
+%                 Y(k:m,k) = y_aux(k:m);
+%                 Y(k, k+1:m) = y_aux(k+1:m)';
+%                 
+%                 Y(k+1:m,k+1) = y_aux(m+k+1:end);
+%                 Y(k, k:m) = y_aux(m-k+2:end)';
                 k=k+2;
 
             end

@@ -5,4 +5,4 @@ C = C +  C';
 
 %lyap_discR(A, C);
 
-lyap_discR(A,C,false);
+lyap_discR(A,C,true);
