@@ -25,6 +25,11 @@ end
         return
     end
     
+    if intersect(eigA, -eigA)
+        disp('Matricea A nu este buna')
+        return
+    end
+    
     % obtinem forma Schur 
     [U, S] = schur(A, 'real');
        
