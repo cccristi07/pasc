@@ -6,6 +6,8 @@ A = -A;
 
 C = rand(dim);
 C = C*C';
-Lx = lyap_contHamm(A,C);
+Lc = chol(C);
+
+Lx = lyap_contHamm(A,Lc);
 
 

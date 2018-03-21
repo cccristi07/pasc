@@ -1,7 +1,7 @@
-function [ Lx ] = lyap_contHamm( A, C )
-% A'X + XA  + C = 0
-% U*S'*U'*X + X*U*S*U' + C = 0
-% S'* U'*X*U + U'*X*U*S + U'*C*U = 0
+function [ Lx ] = lyap_contHamm( A, Lc )
+% A'X + XA  +Lc' * Lc = 0
+% U*S'*U'*X + X*U*S*U' + Lc' * Lc = 0
+% S'* U'*X*U + U'*X*U*S + U'*Lc' * Lc*U = 0
 % S e bloc sup triungiulara
 % 
 
@@ -9,8 +9,8 @@ function [ Lx ] = lyap_contHamm( A, C )
     %desc schur reala a lui A
     [U, S] = schur(A, 'complex');
     
-    % fact cholesky a lui C
-    Lc = chol(U'*C*U);
+    % fact cholesky a lui C pt ecuatia redusa la forma Schur
+    Lc = Lc * U;
     
     % prim pas
     j = 1;
@@ -42,7 +42,10 @@ function [ Lx ] = lyap_contHamm( A, C )
     
     Lx = U * Lx * U';
     X = Lx' * Lx;
-    norm(A'*X + X*A + C)
+    
+    Lc = Lc * U';
+    
+    norm(A'*X + X*A + Lc'*Lc)
   
     
 end

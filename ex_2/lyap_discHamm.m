@@ -1,4 +1,4 @@
-function [ Lx ] = lyap_discHamm( A, C )
+function [ Lx ] = lyap_discHamm( A, Lc )
 % A'*X*A - X + C = 0
 % U*S'*U'*X*U*S*U' - X + C = 0
 % S' * U'*X*U* S - U'*X*U + U'*C*U = 0
@@ -10,7 +10,7 @@ function [ Lx ] = lyap_discHamm( A, C )
     [U, S] = schur(A, 'complex');
     
     % fact cholesky a lui C
-    Lc = chol(U'*C*U);
+    Lc = Lc * U;
     
     % prim pas
     j = 1;
@@ -43,7 +43,8 @@ function [ Lx ] = lyap_discHamm( A, C )
     
     Lx = U * Lx * U';
     X = Lx' * Lx;
-    norm(A'*X * A -X + C)
+    Lc = Lc * U';
+    norm(A'*X * A -X + Lc'*Lc)
   
     
 end
